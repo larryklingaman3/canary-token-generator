@@ -59,3 +59,22 @@ def url_trigger(token_id: str, request:Request, db: Session = Depends(database.g
         db.refresh(trigger)
         send_discord_alert(f"🚨 URL Canary Triggered 🚨\n-------------------------------\nCanary Name: {token.token_name}\nCanary ID: {token.token_id}\nSource IP: {trigger.source_ip}\nUser-Agent: {trigger.user_agent}")
     return Response(content=url_token.TRANSPARENT_PIXEL, media_type="image/png")
+
+
+@app.post("/url_token")
+def create_url_token(payload: CreateTokenRequest, request: Request, db: Session = Depends(database.get_db)):
+    token_id = url_token.generate_token_id()
+    new_token = models.Tokens(token_id=token_id, token_name=payload.token_name, token_type="url")
+    db.add(new_token)
+    db.commit()
+    db.refresh(new_token)
+    return new_token
+
+@app.post("/dns_token")
+def create_dns_token(payload: CreateTokenRequest, request: Request, db: Session = Depends(database.get_db)):
+    token_id = url_token.generate_token_id()
+    new_token = models.Tokens(token_id=token_id, token_name=payload.token_name, token_type="dns")
+    db.add(new_token)
+    db.commit()
+    db.refresh(new_token)
+    return new_token
